@@ -1,30 +1,40 @@
 import React, { PropTypes } from 'react';
-import { TextInput, View, ListView, ScrollView, Image, Text, Dimensions, TouchableHighlight, TouchableWithoutFeedback, Platform, ActivityIndicator, PixelRatio } from 'react-native';
+import { TextInput, View, ListView,ScrollView, Image, Text, Dimensions, TouchableHighlight, TouchableWithoutFeedback, Platform, ActivityIndicator, ProgressBarAndroid, PixelRatio } from 'react-native';
 import Qs from 'qs';
+import {InputGroup, Input, Content, Icon} from 'native-base';
 
-const WINDOW = Dimensions.get('window');
 
 const defaultStyles = {
   container: {
-    flex: 1,
+    //flex: 1,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    height: 250,
   },
   textInputContainer: {
-    backgroundColor: '#C9C9CE',
-    height: 44,
-    borderTopColor: '#7e7e7e',
-    borderBottomColor: '#b5b5b5',
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    height: 10,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
     borderTopWidth: 1 / PixelRatio.get(),
     borderBottomWidth: 1 / PixelRatio.get(),
   },
   textInput: {
     backgroundColor: '#FFFFFF',
-    height: 28,
+    height: 10,
     borderRadius: 5,
-    paddingTop: 4.5,
-    paddingBottom: 4.5,
+    paddingTop: 0,
+    paddingBottom: 0,
     paddingLeft: 10,
     paddingRight: 10,
-    marginTop: 7.5,
+    marginTop: 0,
+    marginBottom: 0,
     marginLeft: 8,
     marginRight: 8,
     fontSize: 15,
@@ -34,7 +44,7 @@ const defaultStyles = {
     alignItems: 'center',
   },
   powered: {
-    marginTop: 15,
+    marginTop: 0,
   },
   listView: {
     // flex: 1,
@@ -85,14 +95,12 @@ const GooglePlacesAutocomplete = React.createClass({
     nearbyPlacesAPI: React.PropTypes.string,
     filterReverseGeocodingByTypes: React.PropTypes.array,
     predefinedPlacesAlwaysVisible: React.PropTypes.bool,
-    enableEmptySections: React.PropTypes.bool,
-    renderDescription: React.PropTypes.func,
-    renderRow: React.PropTypes.func,
+    enableEmptySections: React.PropTypes.bool
   },
 
   getDefaultProps() {
     return {
-      placeholder: 'Search',
+      placeholder: 'Cím (település, utca, házszám)',
       placeholderTextColor: '#A8A8A8',
       onPress: () => {},
       minLength: 0,
@@ -103,7 +111,7 @@ const GooglePlacesAutocomplete = React.createClass({
       onTimeout: () => console.warn('google places autocomplete: request timeout'),
       query: {
         key: 'missing api key',
-        language: 'en',
+        language: 'hu',
         types: 'geocode',
       },
       GoogleReverseGeocodingQuery: {
@@ -113,6 +121,23 @@ const GooglePlacesAutocomplete = React.createClass({
         types: 'food',
       },
       styles: {
+        inputGrp: {
+          flexDirection: 'row',
+          borderWidth: 1,
+          borderColor: 'rgba(0, 0, 0, 0.1)',
+          marginBottom: 0,
+          flex: 0,
+        },
+        input: {
+          // fontSize: 20,
+          paddingLeft: 15,
+          color: 'rgba(0, 0, 0, 0.8)'
+        },
+        icon: {
+          marginLeft: 20,
+          color: 'rgba(0,0,0,0.6)',
+          alignSelf: 'center',
+        },
       },
       textInputProps: {},
       enablePoweredByContainer: true,
@@ -122,8 +147,7 @@ const GooglePlacesAutocomplete = React.createClass({
       nearbyPlacesAPI: 'GooglePlacesSearch',
       filterReverseGeocodingByTypes: [],
       predefinedPlacesAlwaysVisible: false,
-      enableEmptySections: true,
-      listViewDisplayed: 'auto'
+      enableEmptySections: true
     };
   },
 
@@ -137,7 +161,7 @@ const GooglePlacesAutocomplete = React.createClass({
     return {
       text: this.props.getDefaultValue(),
       dataSource: ds.cloneWithRows(this.buildRowsFromResults([])),
-      listViewDisplayed: this.props.listViewDisplayed === 'auto' ? false : this.props.listViewDisplayed,
+      listViewDisplayed: false,
     };
   },
 
@@ -170,14 +194,6 @@ const GooglePlacesAutocomplete = React.createClass({
     return [...res, ...results];
   },
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.listViewDisplayed !== 'auto') {
-      this.setState({
-        listViewDisplayed: nextProps.listViewDisplayed,
-      });
-    }
-  },
-
   componentWillUnmount() {
     this._abortRequests();
   },
@@ -202,23 +218,24 @@ const GooglePlacesAutocomplete = React.createClass({
    * @public
    */
   triggerBlur() {
-    if (this.refs.textInput) this.refs.textInput.blur();
+    //if (this.refs.textInput) this.refs.textInput.blur();
   },
 
   getCurrentLocation() {
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this._requestNearby(position.coords.latitude, position.coords.longitude);
-      },
-      (error) => {
-        this._disableRowLoaders();
-        alert(error.message);
-      },
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+        (position) => {
+          this._requestNearby(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          this._disableRowLoaders();
+          alert(error.message);
+        },
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
     );
   },
 
   _enableRowLoader(rowData) {
+
     let rows = this.buildRowsFromResults(this._results);
     for (let i = 0; i < rows.length; i++) {
       if ((rows[i].place_id === rowData.place_id) || (rows[i].isCurrentLocation === true && rowData.isCurrentLocation === true)) {
@@ -288,10 +305,10 @@ const GooglePlacesAutocomplete = React.createClass({
         }
       };
       request.open('GET', 'https://maps.googleapis.com/maps/api/place/details/json?' + Qs.stringify({
-        key: this.props.query.key,
-        placeid: rowData.place_id,
-        language: this.props.query.language,
-      }));
+            key: this.props.query.key,
+            placeid: rowData.place_id,
+            language: this.props.query.language,
+          }));
       request.send();
     } else if (rowData.isCurrentLocation === true) {
 
@@ -400,16 +417,16 @@ const GooglePlacesAutocomplete = React.createClass({
       if (this.props.nearbyPlacesAPI === 'GoogleReverseGeocoding') {
         // your key must be allowed to use Google Maps Geocoding API
         url = 'https://maps.googleapis.com/maps/api/geocode/json?' + Qs.stringify({
-          latlng: latitude+','+longitude,
-          key: this.props.query.key,
-          ...this.props.GoogleReverseGeocodingQuery,
-        });
+              latlng: latitude+','+longitude,
+              key: this.props.query.key,
+              ...this.props.GoogleReverseGeocodingQuery,
+            });
       } else {
         url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?' + Qs.stringify({
-          location: latitude+','+longitude,
-          key: this.props.query.key,
-          ...this.props.GooglePlacesSearchQuery,
-        });
+              location: latitude+','+longitude,
+              key: this.props.query.key,
+              ...this.props.GooglePlacesSearchQuery,
+            });
       }
 
       request.open('GET', url);
@@ -471,76 +488,58 @@ const GooglePlacesAutocomplete = React.createClass({
   },
 
   _getRowLoader() {
-    return (
-      <ActivityIndicator
-        animating={true}
-        size="small"
-      />
-    );
-  },
-
-  _renderRowData(rowData) {
-    if (this.props.renderRow) {
-      return this.props.renderRow(rowData);
+    if (Platform.OS === 'android') {
+      return (
+          <ProgressBarAndroid
+              style={[defaultStyles.androidLoader, this.props.styles.androidLoader]}
+              styleAttr="Inverse"
+          />
+      );
     }
-
     return (
-      <Text style={[{flex: 1}, defaultStyles.description, this.props.styles.description, rowData.isPredefinedPlace ? this.props.styles.predefinedPlacesDescription : {}]}
-        numberOfLines={1}
-      >
-        {this._renderDescription(rowData)}
-      </Text>
+        <ActivityIndicator
+            animating={true}
+            size="small"
+        />
     );
-  },
-
-  _renderDescription(rowData) {
-    if (this.props.renderDescription) {
-      return this.props.renderDescription(rowData);
-    }
-
-    return rowData.description || rowData.formatted_address || rowData.name;
   },
 
   _renderLoader(rowData) {
     if (rowData.isLoading === true) {
       return (
-        <View
-          style={[defaultStyles.loader, this.props.styles.loader]}
-        >
-          {this._getRowLoader()}
-        </View>
+          <View
+              style={[defaultStyles.loader, this.props.styles.loader]}
+          >
+            {this._getRowLoader()}
+          </View>
       );
     }
     return null;
   },
 
-  _renderRow(rowData = {}, sectionID, rowID) {
+  _renderRow(rowData = {}) {
+    rowData.description = rowData.description || rowData.formatted_address || rowData.name;
+
     return (
-      <ScrollView
-        style={{ flex: 1 }}
-        keyboardShouldPersistTaps={true}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}>
         <TouchableHighlight
-          style={{ minWidth: WINDOW.width }}
-          onPress={() => this._onPress(rowData)}
-          underlayColor="#c8c7cc"
+            onPress={() =>
+          this._onPress(rowData)
+        }
+            underlayColor="#c8c7cc"
         >
-          <View style={[defaultStyles.row, this.props.styles.row, rowData.isPredefinedPlace ? this.props.styles.specialItemRow : {}]}>
-            {this._renderRowData(rowData)}
-            {this._renderLoader(rowData)}
+          <View>
+            <View style={[defaultStyles.row, this.props.styles.row, rowData.isPredefinedPlace ? this.props.styles.specialItemRow : {}]}>
+              <Text
+                  style={[{flex: 1}, defaultStyles.description, this.props.styles.description, rowData.isPredefinedPlace ? this.props.styles.predefinedPlacesDescription : {}]}
+                  numberOfLines={1}
+              >
+                {rowData.description}
+              </Text>
+              {this._renderLoader(rowData)}
+            </View>
+            <View style={[defaultStyles.separator, this.props.styles.separator]} />
           </View>
         </TouchableHighlight>
-      </ScrollView>
-    );
-  },
-
-  _renderSeparator(sectionID, rowID) {
-    return (
-      <View
-        key={ `${sectionID}-${rowID}` }
-        style={[defaultStyles.separator, this.props.styles.separator]} />
     );
   },
 
@@ -556,30 +555,26 @@ const GooglePlacesAutocomplete = React.createClass({
   _getListView() {
     if ((this.state.text !== '' || this.props.predefinedPlaces.length || this.props.currentLocation === true) && this.state.listViewDisplayed === true) {
       return (
-        <ListView
-          keyboardShouldPersistTaps={true}
-          keyboardDismissMode="on-drag"
-          style={[defaultStyles.listView, this.props.styles.listView]}
-          dataSource={this.state.dataSource}
-          renderSeparator={this._renderSeparator}
-          automaticallyAdjustContentInsets={false}
-          {...this.props}
-          renderRow={this._renderRow}
-        />
+          <ListView
+              keyboardShouldPersistTaps={true}
+              keyboardDismissMode="on-drag"
+              style={{height:75} }
+              dataSource={this.state.dataSource}
+              renderRow={this._renderRow}
+              automaticallyAdjustContentInsets={false}
+
+              {...this.props}
+          />
       );
     }
 
     if(this.props.enablePoweredByContainer) {
       return (
-        <View
-          style={[defaultStyles.poweredContainer, this.props.styles.poweredContainer]}
-        >
-          <Image
-            style={[defaultStyles.powered, this.props.styles.powered]}
-            resizeMode={Image.resizeMode.contain}
-            source={require('./images/powered_by_google_on_white.png')}
-          />
-        </View>
+          <View
+              style={[defaultStyles.poweredContainer, this.props.styles.poweredContainer,{paddingTop:0,marginTop:0}]}
+          >
+
+          </View>
       );
     }
 
@@ -588,28 +583,49 @@ const GooglePlacesAutocomplete = React.createClass({
   render() {
     let { onChangeText, onFocus, ...userProps } = this.props.textInputProps;
     return (
-      <View
-        style={[defaultStyles.container, this.props.styles.container]}
-      >
         <View
-          style={[defaultStyles.textInputContainer, this.props.styles.textInputContainer]}
+            style={[defaultStyles.container, this.props.styles.container,{paddingTop:0,marginTop:0}]}
         >
-          <TextInput
-            { ...userProps }
-            ref="textInput"
-            autoFocus={this.props.autoFocus}
-            style={[defaultStyles.textInput, this.props.styles.textInput]}
-            onChangeText={onChangeText ? text => {this._onChangeText(text); onChangeText(text)} : this._onChangeText}
-            value={this.state.text}
-            placeholder={this.props.placeholder}
-            placeholderTextColor={this.props.placeholderTextColor}
-            onFocus={onFocus ? () => {this._onFocus(); onFocus()} : this._onFocus}
-            clearButtonMode="while-editing"
-          />
+          <View
+
+          >
+            <InputGroup borderType='regular' style={{
+          flexDirection: 'row',
+          //  borderWidth: 1,
+          marginTop: 0,
+          paddingTop: 0,
+          borderWidth: 1,
+          borderColor: 'rgba(0, 0, 0, 0.1)',
+          marginBottom: 0,
+          flex: 0,
+        }}>
+              <Icon name="ios-pin" style={{
+          marginLeft: 20,
+          color: 'rgba(0,0,0,0.6)',
+          alignSelf: 'center',
+        }}/>
+              <Input
+                  { ...userProps }
+                  ref="textInput"
+                  autoFocus={this.props.autoFocus}
+                  style={{
+          // fontSize: 20,
+          paddingLeft: 15,
+          color: 'rgba(0, 0, 0, 0.8)'
+        }}
+                  onChangeText={onChangeText ? text => {this._onChangeText(text); onChangeText(text)} : this._onChangeText}
+                  value={this.state.text}
+                  placeholder={this.props.placeholder}
+
+                  onFocus={onFocus ? () => {this._onFocus(); onFocus()} : this._onFocus}
+                  clearButtonMode="while-editing"
+              />
+            </InputGroup>
+          </View>
+
+          {this._getListView()}
+
         </View>
-        {this._getListView()}
-        {this.props.children}
-      </View>
     );
   },
 });
@@ -620,9 +636,9 @@ const create = function create(options = {}) {
   return React.createClass({
     render() {
       return (
-        <GooglePlacesAutocomplete ref="GooglePlacesAutocomplete"
-          {...options}
-        />
+          <GooglePlacesAutocomplete ref="GooglePlacesAutocomplete"
+              {...options}
+          />
       );
     },
   });

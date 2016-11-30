@@ -1,7 +1,7 @@
 {
-  "name": "react-native-google-places-autocomplete",
+  "name": "react-native-google-places-autocomplete-benestudio",
   "version": "1.2.7",
-  "description": "Customizable Google Places autocomplete component for iOS and Android React-Native apps",
+  "description": "BeneStudios fork of Customizable Google Places autocomplete component for iOS and Android React-Native apps",
   "main": "GooglePlacesAutocomplete.js",
   "scripts": {
     "test": "./node_modules/eslint/bin/eslint.js GooglePlacesAutocomplete.js"
@@ -10,7 +10,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FaridSafi/react-native-google-places-autocomplete.git"
+    "url": "git+https://github.com/benestudio/react-native-google-places-autocomplete.git"
   },
   "keywords": [
     "autocomplete",
@@ -22,11 +22,12 @@
     "android"
   ],
   "bugs": {
-    "url": "https://github.com/FaridSafi/react-native-google-places-autocomplete/issues"
+    "url": "https://github.com/benestudio/react-native-google-places-autocomplete/issues"
   },
-  "homepage": "https://github.com/FaridSafi/react-native-google-places-autocomplete#readme",
+  "homepage": "https://github.com/benestudio/react-native-google-places-autocomplete#readme",
   "dependencies": {
-    "qs": "^5.2.0"
+    "qs": "^5.2.0",
+    "native-base": "0.5.7"
   },
   "devDependencies": {
     "eslint": "^1.9.0",
